@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Дело №1895: вспышка в Эльзеле — Детективный квест по ботулизму</title>
+<style>
+  :root{
+    --bg:#f4ecd8;
+    --ink:#2b2b2b;
+    --ochre:#b8860b;
+    --burgundy:#6b1f2e;
+    --burgundy-dark:#4a1520;
+    --grey:#4a4a4a;
+    --paper:rgba(251,245,228,0.94);
+    --shadow:rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:Georgia,"Times New Roman",serif;
+    color:var(--ink);
+    line-height:1.55;
+    min-height:100vh;
+    position:relative;
+  }
+  .bg-layer{
+    position:fixed;inset:0;
+    background-image:url('images/elselle.jpg');
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
+    z-index:-1;
+  }
+  .top-bar{
+    position:sticky;top:0;z-index:50;
+    display:flex;justify-content:space-between;align-items:center;
+    padding:10px 16px;
+    background:rgba(251,245,228,0.92);
+    border-bottom:2px solid var(--burgundy);
+    backdrop-filter:blur(4px);
+  }
+  .author{font-size:12.5px;color:var(--grey);font-style:italic;max-width:60%}
+  .score{
+    font-size:22px;font-weight:bold;color:var(--burgundy);
+    font-family:Georgia,serif;
+  }
+  .container{
+    max-width:960px;margin:0 auto;padding:24px 16px 80px;
+  }
+  .card{
+    background:var(--paper);
+    border:1px solid #c9b98a;
+    border-radius:6px;
+    padding:28px 28px 24px;
+    box-shadow:0 4px 14px var(--shadow);
+    margin-bottom:20px;
+    backdrop-filter:blur(2px);
+  }
+  .card h1,.card h2,.card h3{
+    color:var(--burgundy-dark);
+    margin-bottom:12px;
+  }
+  .card h1{font-size:28px;border-bottom:2px solid var(--ochre);padding-bottom:8px}
+  .card h2{font-size:22px}
+  .card h3{font-size:18px;color:var(--ink)}
+  .lead{font-size:16px;margin-bottom:14px}
+  .mission-header{
+    display:flex;align-items:center;gap:14px;
+    border-bottom:1px dashed var(--ochre);
+    padding-bottom:10px;margin-bottom:18px;
+  }
+  .mission-number{
+    background:var(--burgundy);color:#fff;
+    width:44px;height:44px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:20px;font-weight:bold;flex-shrink:0;
+  }
+  .mission-title{font-size:20px;color:var(--burgundy-dark)}
+  input[type="text"],select,textarea{
+    font-family:inherit;font-size:15px;
+    padding:8px 10px;
+    border:1px solid #8a7a55;
+    border-radius:4px;
+    background:#fff;
+    width:100%;
+  }
+  input[type="text"]:focus,select:focus{outline:2px solid var(--ochre)}
+  label{display:block;margin:8px 0 4px;font-weight:bold;color:var(--grey)}
+  .checkbox-group,.radio-group{
+    background:rgba(251,248,238,0.85);border:1px solid #d9cda5;
+    border-radius:4px;padding:10px 12px;margin:10px 0;
+  }
+  .checkbox-group label,.radio-group label{
+    display:flex;align-items:flex-start;gap:10px;
+    font-weight:normal;cursor:pointer;
+    padding:6px 0;border-bottom:1px dotted #c9b98a;
+  }
+  .checkbox-group label:last-child,.radio-group label:last-child{border-bottom:none}
+  .checkbox-group input,.radio-group input{margin-top:3px;flex-shrink:0}
+  .btn{
+    font-family:inherit;font-size:16px;
+    padding:10px 22px;
+    background:var(--burgundy);color:#fff;
+    border:none;border-radius:4px;
+    cursor:pointer;
+    transition:background .2s;
+    margin-top:14px;
+  }
+  .btn:hover:not(:disabled){background:var(--burgundy-dark)}
+  .btn:disabled{background:#999;cursor:not-allowed;opacity:.6}
+  .btn-secondary{background:var(--ochre)}
+  .btn-secondary:hover:not(:disabled){background:#8a6608}
+  .feedback{
+    margin-top:14px;padding:12px 14px;
+    border-left:4px solid var(--burgundy);
+    background:rgba(251,232,235,0.95);border-radius:3px;
+    font-size:15px;
+  }
+  .feedback.success{border-left-color:#2e7d32;background:rgba(232,245,233,0.95)}
+  .order-list{list-style:none;padding:0}
+  .order-list li{
+    background:#fff;border:1px solid #c9b98a;
+    padding:10px 12px;margin:6px 0;border-radius:4px;
+    cursor:pointer;
+    transition:background .15s,border-color .15s;
+    display:flex;align-items:center;gap:10px;
+  }
+  .order-list li:hover{background:#fbf5e4}
+  .order-list li .step-num{
+    background:#c9b98a;color:#fff;
+    width:28px;height:28px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:13px;font-weight:bold;flex-shrink:0;
+  }
+  .order-list li.selected{
+    background:#fbe8eb;border-color:var(--burgundy);
+  }
+  .order-list li.selected .step-num{
+    background:var(--burgundy);
+  }
+  .tf-grid{display:grid;gap:10px}
+  .tf-item{
+    background:#fff;border:1px solid #c9b98a;
+    padding:12px;border-radius:4px;
+    display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;
+  }
+  .tf-item .tf-text{flex:1;min-width:200px}
+  .tf-item select{width:auto;min-width:100px;max-width:100%;box-sizing:border-box}
+  .illustration{
+    display:flex;justify-content:center;gap:20px;
+    margin:18px 0;padding:14px;
+    background:rgba(251,248,238,0.9);border:1px solid #d9cda5;
+    border-radius:4px;
+    flex-wrap:wrap;
+  }
+  .illustration svg{max-width:100%;height:auto}
+  .eye-option{
+    cursor:pointer;border:2px solid transparent;
+    border-radius:4px;padding:8px;
+    transition:border-color .2s;
+  }
+  .eye-option:hover{border-color:var(--ochre)}
+  .eye-option.selected{border-color:var(--burgundy);background:#fbe8eb}
+  .portrait{
+    float:right;margin:0 0 14px 18px;
+    width:240px;
+    border:3px double var(--burgundy);
+    padding:4px;background:#fff;
+    box-shadow:2px 2px 8px var(--shadow);
+  }
+  .portrait img{width:100%;display:block}
+  .portrait-caption{
+    font-size:11px;text-align:center;
+    color:var(--grey);font-style:italic;
+    padding:4px 0;
+  }
+  .certificate{
+    border:8px double var(--burgundy);
+    padding:40px;
+    background:#fff;
+    text-align:center;
+    margin:20px auto;
+    max-width:700px;
+  }
+  .certificate h2{
+    font-size:32px;color:var(--burgundy);
+    margin-bottom:8px;
+    letter-spacing:2px;
+  }
+  .certificate h3{font-size:18px;color:var(--ochre);margin-bottom:20px}
+  .cert-field{
+    margin:16px auto;
+    border-bottom:1px solid var(--ink);
+    padding:4px 0;
+    min-width:300px;
+    display:inline-block;
+    font-size:18px;
+  }
+  .cert-label{font-size:13px;color:var(--grey);margin-bottom:4px}
+  @media print{
+    body{background:#fff}
+    .bg-layer,.top-bar,.btn,.no-print{display:none!important}
+    .container{padding:0;max-width:100%}
+    .card{box-shadow:none;border:none;padding:0;background:#fff}
+    .certificate{border:8px double #000;page-break-inside:avoid}
+    .cert-field{min-width:250px}
+  }
+  @media (max-width:720px){
+    .card{padding:18px 14px}
+    .card h1{font-size:22px}
+    .card h2{font-size:18px}
+    .portrait{float:none;margin:0 auto 14px;width:200px}
+    .author{font-size:11px;max-width:55%}
+    .score{font-size:18px}
+    .illustration{flex-direction:column;align-items:center}
+    .certificate{padding:24px 16px}
+    .certificate h2{font-size:24px}
+    .cert-field{min-width:200px;font-size:16px}
+    .tf-item{flex-direction:column;align-items:stretch}
+    .tf-item select{width:100%;max-width:100%}
+  }
+  .hidden{display:none}
+  .narrative{
+    background:rgba(251,245,228,0.85);border-left:4px solid var(--ochre);
+    padding:12px 16px;margin:14px 0;
+    font-style:italic;color:var(--grey);
+  }
+  .hint{
+    background:rgba(255,248,220,0.95);border-left:4px solid var(--ochre);
+    padding:10px 14px;margin:12px 0;
+    font-size:14px;
+  }
+  .order-instruction{
+    background:rgba(251,248,238,0.9);border:1px dashed var(--ochre);
+    padding:10px 14px;border-radius:4px;
+    font-size:14px;color:var(--grey);
+    margin-bottom:12px;
+  }
+  .history-block{
+    background:rgba(251,245,228,0.88);
+    border:1px solid #c9b98a;
+    border-radius:4px;
+    padding:14px 16px;
+    margin:12px 0;
+    font-size:15px;
+  }
+  .history-block b{color:var(--burgundy-dark)}
+</style>
+</head>
+<body>
+<div class="bg-layer"></div>
+
+<div class="top-bar">
+  <div class="author">Составитель квеста — к.м.н., доцент кафедры инфекционных болезней и фтизиатрии РязГМУ Шутова О.В.</div>
+  <div class="score" id="scoreDisplay">Баллы: 0 / 100</div>
+</div>
+
+<div class="container" id="app"></div>
+
+<script>
+/* ============================================================
+   СОСТОЯНИЕ ИГРЫ
+   ============================================================ */
+const state = {
+  studentName: '',
+  currentMission: 0,
+  score: 0,
+  missionScores: new Array(10).fill(null),
+  answers: {},
+  shuffledOrders: {},
+  shuffledOptions: {}
+};
+
+/* ============================================================
+   УТИЛИТЫ
+   ============================================================ */
+function shuffle(arr){
+  const a = [...arr];
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  if(a.length > 1 && a.every((v,i)=>v.id === arr[i].id)){
+    [a[0], a[1]] = [a[1], a[0]];
+  }
+  return a;
+}
+
+function getShuffledItems(missionId, items){
+  if(!state.shuffledOrders[missionId]){
+    state.shuffledOrders[missionId] = shuffle(items);
+  }
+  return state.shuffledOrders[missionId];
+}
+
+function getShuffledOptions(missionId, options){
+  if(!state.shuffledOptions[missionId]){
+    state.shuffledOptions[missionId] = shuffle(options);
+  }
+  return state.shuffledOptions[missionId];
+}
+
+/* ============================================================
+   ДАННЫЕ МИССИЙ
+   ============================================================ */
+const missions = {
+  1: {
+    title: 'Показания свидетелей',
+    narrative: '14 декабря 1895 года в деревне Эльзель состоялся поминальный обед в память об Антуане Кретёре, основателе муниципального оркестра. Тридцать четыре музыканта и соседа разделили трапезу. Вскоре у многих появились тревожные симптомы. Местный врач передаёт вам список наблюдений. Выберите ТРИ ключевых признака, которые позволят заподозрить именно ботулизм, а не обычную кишечную инфекцию.',
+    type: 'checkbox',
+    options: [
+      {id:'a', text:'Сохранность ясного сознания при нарастающей слабости', correct:true},
+      {id:'b', text:'Высокая лихорадка до 39°C с ознобом', correct:false},
+      {id:'c', text:'Температура тела не превышает 37,5°C (субфебрилитет или норма)', correct:true},
+      {id:'d', text:'Симметричный нисходящий вялый паралич, начинающийся с черепных нервов', correct:true},
+      {id:'e', text:'Асимметричный паралич с преимущественным поражением одной конечности', correct:false},
+      {id:'f', text:'Бурная диарея с примесью крови и тенезмами', correct:false}
+    ],
+    correctIds:['a','c','d'],
+    hint:'Ботулизм — это интоксикация нейротоксином, а не инвазивная инфекция: температура тела обычно нормальная или субфебрильная (<38°C), сознание остаётся ясным, а паралич распространяется симметрично сверху вниз. Высокая лихорадка и кровавая диарея указывают на иной диагноз.',
+    successText:'Верно! Сохранность сознания, отсутствие выраженной лихорадки и симметричный нисходящий паралич — классическая триада, позволяющая заподозрить ботулизм.'
+  },
+  2: {
+    title: 'Дневник Кернера',
+    narrative: 'В 1820 году немецкий врач Жюстенус Кернер опубликовал монографию о «колбасном яде», обобщив наблюдения за 76 пациентами. Он выделил характерную последовательность симптомов, которая остаётся диагностическим ориентиром и сегодня. Расставьте три фазы клинической картины ботулизма по Кернеру в правильной хронологической последовательности — от первых проявлений к поздним.',
+    type: 'order',
+    items:[
+      {id:'k1', text:'Гастроинтестинальная фаза: тошнота, рвота до 3–5 раз, боли в животе, кратковременное повышение температуры, часто предшествующие неврологической симптоматике', order:1},
+      {id:'k2', text:'Офтальмоплегическая фаза: двусторонний птоз, мидриаз с вялой или отсутствующей реакцией зрачков на свет и конвергенцию, диплопия, ограничение движений глазных яблок', order:2},
+      {id:'k3', text:'Бульбарная фаза: дисфагия с прогрессированием от твёрдой пищи к жидкости, дисфония с носовым оттенком речи, парез мягкого нёба, снижение глоточного рефлекса', order:3}
+    ],
+    hint:'Кернер описал последовательность: сначала гастроинтестинальные симптомы (у почти половины больных), затем офтальмоплегия (двусторонний птоз, мидриаз, диплопия), и наконец бульбарные нарушения (дисфагия, дисфония).',
+    successText:'Отлично! Триада Кернера: гастроинтестинальные симптомы → офтальмоплегия → бульбарные нарушения. Эта последовательность остаётся диагностическим ориентиром и сегодня.'
+  },
+  3: {
+    title: 'Окулист в Эльзеле',
+    narrative: 'Местный окулист показал вам двух пациентов с неврологическими симптомами. Осмотрите схемы глаз и выберите того, у кого клиническая картина наиболее соответствует ботулизму.',
+    type: 'radio',
+    options:[
+      {id:'sym', text:'Пациент A'},
+      {id:'asym', text:'Пациент B'}
+    ],
+    correctId:'sym',
+    hint:'Для ботулизма характерна симметричность поражений черепных нервов. Согласно методическим рекомендациям Минздрава РФ, выраженная анизокория, односторонний птоз или асимметричные парезы практически всегда полностью исключают ботулизм.',
+    successText:'Верно! Симметричный двусторонний птоз и мидриаз — типичная картина офтальмоплегии при ботулизме. Асимметричные поражения указывают на иной диагноз.'
+  },
+  4: {
+    title: 'Не может глотать',
+    narrative: 'У выживших участников поминального обеда нарастает нарушение глотания. Расставьте этапы прогрессирования дисфагии в правильном порядке — от первого проявления к крайнему.',
+    type: 'order',
+    items:[
+      {id:'o1', text:'Незначительное затруднение при проглатывании твёрдой, сухой пищи, ощущение «комка» в горле', order:1},
+      {id:'o2', text:'Необходимость запивать полужидкую пищу, замедление акта глотания', order:2},
+      {id:'o3', text:'Поперхивание жидкостью, частичное истечение жидкости через нос из-за пареза мягкого нёба', order:3},
+      {id:'o4', text:'Выраженная сухость во рту и жажда (атропиноподобное действие токсина), невозможность проглотить даже слюну', order:4}
+    ],
+    hint:'Дисфагия при ботулизме прогрессирует по мере нарастания паралича бульбарной мускулатуры: от твёрдой пищи к полужидкой, затем к жидкости (с поперхиванием и истечением через нос). Атропиноподобное действие ботулотоксина на вегетативную нервную систему приводит к выраженной гипосаливации и ощущению сухости во рту.',
+    successText:'Верно! Дисфагия нарастает: твёрдая пища → полужидкая → жидкость (с поперхиванием) → сухость во рту и невозможность проглотить слюну.'
+  },
+  5: {
+    title: 'Смерть на полуслове',
+    narrative: 'Один из музыкантов внезапно стал задыхаться. Ван Эрменгем предупреждает: поражение диафрагмы и межрёберных мышц может привести к острой дыхательной недостаточности. Выберите ВСЕ признаки ОДН, которые вы должны немедленно распознать.',
+    type: 'checkbox',
+    options:[
+      {id:'t1', text:'Тахипноэ, одышка, чувство нехватки воздуха', correct:true},
+      {id:'t2', text:'Снижение pO2 артериальной крови, нарастание pCO2, десатурация', correct:true},
+      {id:'t3', text:'Ажитация, беспокойство, затем возможная заторможенность', correct:true},
+      {id:'t4', text:'Разорванность речи: больной вынужден делать вдох после 3–5 слов', correct:true},
+      {id:'t5', text:'Глубокое редкое дыхание Куссмауля с запахом ацетона', correct:false},
+      {id:'t6', text:'Продуктивный кашель с гнойной мокротой и крепитацией в лёгких', correct:false}
+    ],
+    correctIds:['t1','t2','t3','t4'],
+    hint:'ОДН при ботулизме развивается из-за паралича дыхательной мускулатуры (диафрагмы и межрёберных мышц). Объективные признаки (снижение pO2, нарастание pCO2) часто появляются раньше клинических. Дыхание Куссмауля характерно для метаболического ацидоза, а продуктивный кашель — для пневмонии.',
+    successText:'Верно! Тахипноэ, гипоксемия с гиперкапнией, ажитация и разорванность речи — ключевые признаки надвигающейся дыхательной недостаточности при ботулизме.'
+  },
+  6: {
+    title: 'Лаборатория ван Эрменгема',
+    narrative: 'В своей лаборатории ван Эрменгем устанавливает механизм болезни. Расставьте этапы патогенеза пищевого ботулизма в правильной последовательности.',
+    type: 'order',
+    items:[
+      {id:'p1', text:'Всасывание ботулотоксина из верхних отделов желудочно-кишечного тракта', order:1},
+      {id:'p2', text:'Гематогенное распространение токсина к периферическим холинергическим синапсам', order:2},
+      {id:'p3', text:'Блок пресинаптического высвобождения ацетилхолина в нервно-мышечных синапсах', order:3},
+      {id:'p4', text:'Развитие симметричного вялого паралича поперечно-полосатой и гладкой мускулатуры', order:4}
+    ],
+    hint:'Токсин всасывается в ЖКТ, затем с током крови достигает нервно-мышечных синапсов, где блокирует выброс ацетилхолина — это приводит к параличу. Ботулотоксин не проникает через гематоэнцефалический барьер и не проходит через плаценту.',
+    successText:'Верно! Токсин всасывается → распространяется гематогенно → блокирует ацетилхолин → вызывает паралич.'
+  },
+  7: {
+    title: 'Тайна бочки',
+    narrative: 'Следствие установило: отравленной оказалась сырая, солёная и копчёная в течение пятидесяти дней ветчина. Ван Эрменгем восстановил процесс её приготовления: мясо укладывали слоями с салом в бочку, заливали водой, создавая анаэробные условия. Определите, какие утверждения об условиях токсинообразования верны.',
+    type: 'truefalse',
+    items:[
+      {id:'tf1', text:'Clostridium botulinum — строгий анаэроб; герметизация создаёт оптимальные условия для токсинообразования', correct:true},
+      {id:'tf2', text:'Токсин активно образуется при температуре домашнего холодильника (+3°C и ниже)', correct:false},
+      {id:'tf3', text:'Высокие концентрации поваренной соли (до 18%) не оказывают инактивирующего воздействия на ботулотоксин', correct:true},
+      {id:'tf4', text:'Ботулотоксин полностью разрушается при кипячении (100°C) в течение 10 минут', correct:true},
+      {id:'tf5', text:'Споры возбудителя погибают при обычном домашнем кипячении консервов', correct:false}
+    ],
+    hint:'Споры C. botulinum высокоустойчивы: при кипячении гибнут через 5 часов, при автоклавировании — через 10 минут. Токсин термолабилен (разрушается при 100°C за 10 мин). Продукция токсина может продолжаться и при +3°C, то есть при температуре домашнего холодильника.',
+    successText:'Верно! Анаэробные условия, устойчивость спор к кипячению, термолабильность токсина — ключевые факторы, которые ван Эрменгем учёл в своём расследовании.'
+  },
+  8: {
+    title: 'Дифференциальный диагноз',
+    narrative: 'Ван Эрменгем должен исключить другие заболевания с неврологической симптоматикой. Сопоставьте нозологии с их отличительными признаками.',
+    type: 'match',
+    items:[
+      {id:'d1', text:'Пищевой ботулизм', correct:'bot'},
+      {id:'d2', text:'Синдром Гийена-Барре (СГБ)', correct:'gbs'},
+      {id:'d3', text:'Острая нейроинфекция (менингоэнцефалит)', correct:'neuro'},
+      {id:'d4', text:'Отравление беленой (атропином)', correct:'bell'}
+    ],
+    options:[
+      {id:'bot', text:'Нисходящий симметричный паралич при ясном сознании, без выраженной лихорадки, спинномозговая жидкость без воспалительных изменений, сухость слизистых'},
+      {id:'gbs', text:'Восходящий паралич, часто после перенесённой инфекции, цито-белковая диссоциация в спинномозговой жидкости'},
+      {id:'neuro', text:'Нарушение сознания, менингеальный синдром, гипертермия, плеоцитоз в спинномозговой жидкости'},
+      {id:'bell', text:'Нарушение сознания, зрительные и слуховые галлюцинации, психомоторное возбуждение, расширенные зрачки, сухость слизистых, тахикардия'},
+      {id:'myasthenia', text:'Флуктуирующая мышечная слабость с патологической утомляемостью, птоз, диплопия, положительная проба с антихолинэстеразными препаратами'}
+    ],
+    hint:'Ключевые дифференциально-диагностические ориентиры: направление паралича (нисходящее при ботулизме, восходящее при СГБ), уровень сознания (ясное при ботулизме, нарушенное с галлюцинациями при отравлении беленой), наличие лихорадки и воспалительных изменений в СМЖ (при нейроинфекции).',
+    successText:'Отлично! Эти признаки позволяют чётко разграничить ботулизм, СГБ, нейроинфекции и отравление беленой.'
+  },
+  9: {
+    title: 'Лабораторное подтверждение',
+    narrative: 'Ван Эрменгем получил образцы злополучной ветчины и образцы органов скончавшихся жертв. Из ветчины и тканей он выделил и культивировал новую анаэробную бактерию, назвав её <i>Bacillus botulinus</i>. Но ключевым стал его новаторский эксперимент: выращенную культуру он пропустил через бактериальный фильтр, который задерживает бактерии, но пропускает растворимые вещества, в том числе токсины. <b>Фильтрат, свободный от бактерий, ввели лабораторным животным</b> — у них развились типичные признаки ботулизма: мышечная слабость, паралич, нарушение глотания, вплоть до летального исхода. В параллельном опыте животным вводили профильтрованную среду без культуры — болезни не возникало. Ван Эрменгем продемонстрировал, что яд не разрушается при пищеварении, оставаясь эффективным даже после перорального введения. Так он доказал, что ботулизм — это <b>интоксикация</b>, а не инфекция. Расставьте действия по диагностике ботулизма в правильной последовательности — от первого шага до получения результата.',
+    type: 'order',
+    items:[
+      {id:'l1', text:'Забор материала (кровь, кал, рвотные массы, промывные воды желудка) ДО введения противоботулинической сыворотки', order:1},
+      {id:'l2', text:'Доставка образцов в лабораторию в условиях, исключающих разрушение токсина', order:2},
+      {id:'l3', text:'Проведение биологической пробы — реакции нейтрализации на белых мышах с использованием специфических антитоксических сывороток', order:3},
+      {id:'l4', text:'Идентификация типа ботулотоксина (A, B, E и др.) для выбора моновалентной сыворотки', order:4}
+    ],
+    hint:'Забор материала для лабораторных исследований осуществляется при первом подозрении на ботулизм ДО введения больному противоботулинической сыворотки, так как сыворотка нейтрализует токсин и делает его невозможным для обнаружения. Наиболее широко используется биологическая проба — реакция нейтрализации на мышах.',
+    successText:'Верно! Забор материала до ПБС → доставка → биологическая проба на мышах → идентификация типа токсина.'
+  },
+  10: {
+    title: 'Профилактика ботулизма',
+    narrative: 'Расследование завершено. Ван Эрменгем формулирует рекомендации по предотвращению подобных трагедий. Определите, какие меры профилактики ботулизма являются эффективными. Выберите только правильные утверждения.',
+    type: 'checkbox',
+    options:[
+      {id:'pr1', text:'Тщательное мытьё грибов и овощей перед консервированием', correct:true},
+      {id:'pr2', text:'Удаление кишечника при засоле рыбы', correct:true},
+      {id:'pr3', text:'Кипячение домашних консервов на водяной бане в течение 15 минут перед употреблением', correct:true},
+      {id:'pr4', text:'Хранение домашних консервов в холодильнике гарантирует безопасность продукта', correct:false},
+      {id:'pr5', text:'Ботулизм никогда не ассоциируется с кислой (квашеной) капустой и вареньем', correct:true},
+      {id:'pr6', text:'Коммерческие консервы, изготовленные с соблюдением ГОСТов, представляют значительно меньшую опасность', correct:true},
+      {id:'pr7', text:'Замораживание домашних консервов при -18°C полностью уничтожает ботулотоксин', correct:false},
+      {id:'pr8', text:'Добавление уксуса в любом количестве гарантирует безопасность консервов', correct:false}
+    ],
+    correctIds:['pr1','pr2','pr3','pr5','pr6'],
+    hint:'Не совсем верно. Хранение домашних консервов в холодильнике НЕ гарантирует безопасность — продукция токсина может продолжаться при температуре +3°C. Замораживание при -18°C также не разрушает уже образовавшийся токсин. Добавление уксуса в любом количестве не гарантирует безопасность — для подавления роста клостридий нужна определённая концентрация, обеспечивающая pH < 4.6. Правильные меры профилактики: тщательное мытьё грибов и овощей, удаление кишечника при засоле рыбы, кипячение домашних консервов 15 минут, а также предпочтение коммерческих консервов, изготовленных с соблюдением ГОСТов. Ботулизм никогда не ассоциируется с кислой капустой и вареньем.',
+    successText:'Верно! Тщательное мытьё грибов и овощей, удаление кишечника рыбы, кипячение консервов 15 минут, безопасность коммерческих продуктов и отсутствие риска в кислой капусте и варенье — основа профилактики ботулизма.'
+  }
+};
+
+/* ============================================================
+   РЕНДЕР ЭКРАНОВ
+   ============================================================ */
+const app = document.getElementById('app');
+const scoreDisplay = document.getElementById('scoreDisplay');
+
+function updateScore(){
+  scoreDisplay.textContent = `Баллы: ${state.score} / 100`;
+}
+
+function renderStart(){
+  app.innerHTML = `
+    <div class="card">
+      <img class="portrait" src="images/ermengem.png" alt="Портрет Эмиля ван Эрменгема">
+      <h1>Дело №1895: вспышка в Эльзеле</h1>
+      <div class="history-block">
+        <b>14 декабря 1895 года.</b> Бельгийская деревня Эльзель. Поминальный обед в память
+        об Антуане Кретёре, основателе муниципального оркестра. Тридцать четыре музыканта
+        и соседа разделили трапезу. Общим блюдом стала сырая, солёная и копчёная в течение
+        пятидесяти дней ветчина.
+      </div>
+      <div class="history-block">
+        Поначалу симптомы напоминали обычное пищевое отравление, вероятно, усугублённое
+        обильным употреблением пива: расстройства пищеварения, рвота, болезненное мочеиспускание.
+        Однако клиническая картина быстро переросла в тревожные неврологические проявления.
+        Жертвы жаловались на зрительные нарушения — двоение в глазах (диплопию), аномально
+        расширенные зрачки и птоз (опущение век). Появилась сильная жажда, но любая попытка
+        выпить вызывала поперхивание, ощущение удушья и истечение жидкости через нос —
+        клинический признак тяжёлого бульбарного паралича.
+      </div>
+      <div class="history-block">
+        <b>Трое молодых музыкантов скончались</b>; последним, 22 декабря, ушёл Фирмен Кретёр,
+        родственник покойного. В связи с подозрением на криминальное отравление полиция
+        обратилась к <b>Эмилю-Пьеру-Мари ван Эрменгему</b> (1851–1932), профессору
+        бактериологии Гентского университета, который в 1883 году работал в лаборатории
+        Роберта Коха в Берлине.
+      </div>
+      <div class="narrative">
+        «Коллега, — говорит ван Эрменгем, — Местные врачи подозревают криминальное отравление
+        и обвиняют семью Кретёр. Но описание симптомов немедленно напомнило мне монографию
+        Кернера о «колбасном яде». Нам предстоит установить истинную причину и реабилитировать
+        невинных. У нас есть считанные часы — у выживших токсин уже в крови. Мне нужна Ваша
+        помощь — Вы будете моим ассистентом.»
+      </div>
+      <h3>Ваше досье</h3>
+      <label for="studentName">Имя и фамилия</label>
+      <input type="text" id="studentName" placeholder="Например: Иванов И.И." autocomplete="off">
+      <p style="font-size:13px;color:var(--grey);margin-top:8px">
+        Вам предстоит пройти 10 миссий расследования. За каждую — до 10 баллов.
+        Максимум — 100. Ошибка не останавливает квест, но лишает баллов за миссию.
+      </p>
+      <button class="btn" id="startBtn" disabled>Начать расследование</button>
+    </div>
+  `;
+  const nameInput = document.getElementById('studentName');
+  const startBtn = document.getElementById('startBtn');
+  nameInput.addEventListener('input', ()=>{
+    startBtn.disabled = nameInput.value.trim().length < 3;
+  });
+  startBtn.addEventListener('click', ()=>{
+    state.studentName = nameInput.value.trim();
+    state.currentMission = 1;
+    renderMission(1);
+  });
+}
+
+function renderMission(n){
+  const m = missions[n];
+  if(!m){ renderFinal(); return; }
+  const answered = state.missionScores[n-1] !== null;
+
+  let body = '';
+  if(m.type === 'checkbox') body = renderCheckboxMission(m, n);
+  else if(m.type === 'radio') body = renderRadioMission(m, n);
+  else if(m.type === 'match') body = renderMatchMission(m, n);
+  else if(m.type === 'order') body = renderOrderMission(m, n);
+  else if(m.type === 'truefalse') body = renderTFMission(m, n);
+
+  app.innerHTML = `
+    <div class="card">
+      <div class="mission-header">
+        <div class="mission-number">${n}</div>
+        <div class="mission-title">${m.title}</div>
+      </div>
+      <p class="lead">${m.narrative}</p>
+      ${body}
+      <div id="feedbackArea"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn" id="checkBtn" ${answered?'disabled':''}>${answered?'Миссия завершена':'Проверить ответ'}</button>
+        <button class="btn btn-secondary" id="nextBtn" style="display:${answered?'inline-block':'none'}">Продолжить →</button>
+      </div>
+    </div>
+  `;
+  attachMissionHandlers(n);
+}
+
+/* ---------- Чекбоксы ---------- */
+function renderCheckboxMission(m, n){
+  const saved = state.answers[n] || [];
+  return `
+    <div class="checkbox-group" id="cbGroup">
+      ${m.options.map(o=>`
+        <label><input type="checkbox" value="${o.id}" ${saved.includes(o.id)?'checked':''}> ${o.text}</label>
+      `).join('')}
+    </div>
+  `;
+}
+
+/* ---------- Радиокнопки (глаза) ---------- */
+function renderRadioMission(m, n){
+  const saved = state.answers[n];
+  return `
+    <div class="illustration">
+      <div class="eye-option ${saved==='sym'?'selected':''}" data-val="sym" id="eyeA">
+        <svg width="200" height="160" viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg">
+          <title>Схема глаз пациента A: симметричные изменения</title>
+          <ellipse cx="100" cy="80" rx="90" ry="70" fill="none" stroke="#4a4a4a" stroke-width="1.5"/>
+          <ellipse cx="60" cy="70" rx="18" ry="10" fill="none" stroke="#4a4a4a" stroke-width="1.5"/>
+          <circle cx="60" cy="70" r="7" fill="#2b2b2b"/>
+          <ellipse cx="140" cy="70" rx="18" ry="10" fill="none" stroke="#4a4a4a" stroke-width="1.5"/>
+          <circle cx="140" cy="70" r="7" fill="#2b2b2b"/>
+          <path d="M 42 62 Q 60 72 78 62" fill="#b8860b" opacity="0.5" stroke="#4a4a4a" stroke-width="1"/>
+          <path d="M 122 62 Q 140 72 158 62" fill="#b8860b" opacity="0.5" stroke="#4a4a4a" stroke-width="1"/>
+          <circle cx="60" cy="70" r="5" fill="#6b1f2e"/>
+          <circle cx="140" cy="70" r="5" fill="#6b1f2e"/>
+          <path d="M 100 80 L 95 105 L 105 105 Z" fill="none" stroke="#4a4a4a" stroke-width="1"/>
+          <path d="M 75 125 Q 100 130 125 125" fill="none" stroke="#4a4a4a" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <div class="eye-option ${saved==='asym'?'selected':''}" data-val="asym" id="eyeB">
+        <svg width="200" height="160" viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg">
+          <title>Схема глаз пациента B: асимметричные изменения</title>
+          <ellipse cx="100" cy="80" rx="90" ry="70" fill="none" stroke="#4a4a4a" stroke-width="1.5"/>
+          <ellipse cx="60" cy="70" rx="18" ry="10" fill="none" stroke="#4a4a4a" stroke-width="1.5"/>
+          <circle cx="60" cy="70" r="4" fill="#2b2b2b"/>
+          <ellipse cx="140" cy="70" rx="18" ry="10" fill="none" stroke="#4a4a4a" stroke-width="1.5"/>
+          <circle cx="140" cy="70" r="7" fill="#2b2b2b"/>
+          <path d="M 122 58 Q 140 72 158 58" fill="#b8860b" opacity="0.6" stroke="#4a4a4a" stroke-width="1.2"/>
+          <circle cx="140" cy="70" r="5" fill="#6b1f2e"/>
+          <path d="M 100 80 L 95 105 L 105 105 Z" fill="none" stroke="#4a4a4a" stroke-width="1"/>
+          <path d="M 75 125 Q 100 130 125 125" fill="none" stroke="#4a4a4a" stroke-width="1.5"/>
+        </svg>
+      </div>
+    </div>
+    <p style="text-align:center;font-style:italic;color:var(--grey);font-size:14px">
+      Выберите схему, наиболее соответствующую ботулизму:
+    </p>
+    <div class="radio-group" id="radioGroup">
+      ${m.options.map(o=>`
+        <label><input type="radio" name="eye" value="${o.id}" ${saved===o.id?'checked':''}> ${o.text}</label>
+      `).join('')}
+    </div>
+  `;
+}
+
+/* ---------- Сопоставление (с перемешанными опциями) ---------- */
+function renderMatchMission(m, n){
+  const saved = state.answers[n] || {};
+  const shuffledOpts = getShuffledOptions(n, m.options);
+  return `
+    <div class="tf-grid">
+      ${m.items.map((it,i)=>`
+        <div class="tf-item">
+          <div class="tf-text"><b>${i+1}.</b> ${it.text}</div>
+          <select data-item="${it.id}">
+            <option value="">— выберите —</option>
+            ${shuffledOpts.map(o=>`<option value="${o.id}" ${saved[it.id]===o.id?'selected':''}>${o.text}</option>`).join('')}
+          </select>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+/* ---------- Порядок ---------- */
+function renderOrderMission(m, n){
+  const displayItems = getShuffledItems(n, m.items);
+  const saved = state.answers[n] || [];
+
+  return `
+    <div class="order-instruction">
+      <b>Как отвечать:</b> нажимайте на пункты <b>в нужном порядке</b> — от первого к последнему.
+      Выбранные пункты получат номера 1, 2, 3… Чтобы отменить выбор, нажмите на пункт с номером —
+      он и все последующие сбросятся.
+    </div>
+    <ul class="order-list" id="orderList">
+      ${displayItems.map((it)=>{
+        const pos = saved.indexOf(it.id);
+        const isSelected = pos >= 0;
+        const num = isSelected ? (pos + 1) : '—';
+        return `
+          <li data-id="${it.id}" class="${isSelected?'selected':''}">
+            <span class="step-num">${num}</span>
+            <span>${it.text}</span>
+          </li>
+        `;
+      }).join('')}
+    </ul>
+    <button class="btn btn-secondary" id="resetOrder" type="button" style="margin-top:8px">Сбросить порядок</button>
+  `;
+}
+
+/* ---------- Верно/Неверно ---------- */
+function renderTFMission(m, n){
+  const saved = state.answers[n] || {};
+  return `
+    <div class="tf-grid">
+      ${m.items.map((it,i)=>`
+        <div class="tf-item">
+          <div class="tf-text"><b>${i+1}.</b> ${it.text}</div>
+          <select data-tf="${it.id}">
+            <option value="">—</option>
+            <option value="true" ${saved[it.id]==='true'?'selected':''}>Верно</option>
+            <option value="false" ${saved[it.id]==='false'?'selected':''}>Неверно</option>
+          </select>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+/* ============================================================
+   ВАЛИДАЦИЯ ОТВЕТОВ И ОБРАБОТЧИКИ
+   ============================================================ */
+function attachMissionHandlers(n){
+  const m = missions[n];
+  const checkBtn = document.getElementById('checkBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const feedback = document.getElementById('feedbackArea');
+  const answered = state.missionScores[n-1] !== null;
+
+  const resetBtn = document.getElementById('resetOrder');
+  if(resetBtn){
+    resetBtn.addEventListener('click', ()=>{
+      state.answers[n] = [];
+      renderMission(n);
+    });
+  }
+
+  const orderList = document.getElementById('orderList');
+  if(orderList){
+    orderList.querySelectorAll('li').forEach(li=>{
+      li.addEventListener('click', ()=>{
+        if(answered) return;
+        const id = li.dataset.id;
+        const current = [...(state.answers[n] || [])];
+        const idx = current.indexOf(id);
+        if(idx >= 0){
+          current.splice(idx);
+        } else {
+          current.push(id);
+        }
+        state.answers[n] = current;
+        renderMission(n);
+      });
+    });
+  }
+
+  document.querySelectorAll('.eye-option').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      if(answered) return;
+      document.querySelectorAll('.eye-option').forEach(x=>x.classList.remove('selected'));
+      el.classList.add('selected');
+      const radio = document.querySelector(`input[value="${el.dataset.val}"]`);
+      if(radio) radio.checked = true;
+    });
+  });
+
+  checkBtn.addEventListener('click', ()=>{
+    let correct = false;
+
+    if(m.type === 'checkbox'){
+      const checked = [...document.querySelectorAll('#cbGroup input:checked')].map(x=>x.value);
+      state.answers[n] = checked;
+      correct = checked.length === m.correctIds.length && m.correctIds.every(id=>checked.includes(id));
+    }
+    else if(m.type === 'radio'){
+      const sel = document.querySelector('input[name="eye"]:checked');
+      if(!sel){ feedback.innerHTML='<div class="feedback">Выберите один из вариантов.</div>'; return; }
+      state.answers[n] = sel.value;
+      correct = sel.value === m.correctId;
+    }
+    else if(m.type === 'match'){
+      const ans = {};
+      document.querySelectorAll('.tf-grid select').forEach(s=>{
+        ans[s.dataset.item] = s.value;
+      });
+      state.answers[n] = ans;
+      if(Object.values(ans).some(v=>v==='')){
+        feedback.innerHTML='<div class="feedback">Заполните все соответствия.</div>'; return;
+      }
+      correct = m.items.every(it=>ans[it.id] === it.correct);
+    }
+    else if(m.type === 'order'){
+      const ordered = state.answers[n] || [];
+      if(ordered.length !== m.items.length){
+        feedback.innerHTML=`<div class="feedback">Выбрано пунктов: ${ordered.length} из ${m.items.length}. Расставьте все пункты в правильном порядке.</div>`;
+        return;
+      }
+      correct = ordered.every((id,i)=>m.items[i].id === id);
+    }
+    else if(m.type === 'truefalse'){
+      const ans = {};
+      document.querySelectorAll('.tf-grid select').forEach(s=>{
+        ans[s.dataset.tf] = s.value;
+      });
+      state.answers[n] = ans;
+      if(Object.values(ans).some(v=>v==='')){
+        feedback.innerHTML='<div class="feedback">Ответьте на все утверждения.</div>'; return;
+      }
+      correct = m.items.every(it=>ans[it.id] === String(it.correct));
+    }
+
+    state.missionScores[n-1] = correct ? 10 : 0;
+    if(correct) state.score += 10;
+    updateScore();
+
+    if(correct){
+      feedback.innerHTML = `<div class="feedback success"><b>✓ ${m.successText}</b></div>`;
+    } else {
+      feedback.innerHTML = `<div class="feedback"><b>✗ Не совсем верно.</b> ${m.hint}</div>`;
+    }
+    checkBtn.disabled = true;
+    nextBtn.style.display = 'inline-block';
+  });
+
+  nextBtn.addEventListener('click', ()=>{
+    state.currentMission = n + 1;
+    renderMission(n + 1);
+  });
+}
+
+/* ============================================================
+   ФИНАЛЬНЫЙ ЭКРАН И СЕРТИФИКАТ
+   ============================================================ */
+function renderFinal(){
+  const today = new Date().toLocaleDateString('ru-RU',{day:'2-digit',month:'long',year:'numeric'});
+  const pct = state.score;
+  let reflection = '';
+  if(pct >= 90) reflection = 'Вы продемонстрировали отличное знание клиники, патогенеза и неотложной помощи при ботулизме. Ван Эрменгем был бы доволен таким ассистентом.';
+  else if(pct >= 70) reflection = 'Вы успешно отработали ключевые навыки дифференциальной диагностики ботулизма. Есть небольшие пробелы — повторите триаду Кернера и алгоритм неотложной помощи.';
+  else if(pct >= 50) reflection = 'Вы знакомы с основами, но некоторые дифференциально-диагностические признаки и этапы патогенеза требуют повторения. Рекомендуем вернуться к лекции.';
+  else reflection = 'Расследование выявило существенные пробелы. Ботулизм — смертельно опасное заболевание, требующее чёткого алгоритма действий. Обязательно повторите материал.';
+
+  app.innerHTML = `
+    <div class="card">
+      <h1>Расследование завершено</h1>
+      <div class="history-block">
+        Профессор ван Эрменгем благодарит вас за помощь. Благодаря вашему участию
+        удалось установить истинную причину трагедии: бациллы попали в ветчину из почвы
+        Эльзеля и размножились в анаэробных условиях бочки. Семья Кретёр полностью
+        реабилитирована — они не имели никакого отношения к этой трагедии.
+      </div>
+      <div class="history-block">
+        Ван Эрменгем выделил из ветчины и тканей умерших новую анаэробную бактерию,
+        назвав её <i>Bacillus botulinus</i> (позже, в 1917 году, переклассифицированную
+        в род <i>Clostridium</i>). Ключевым доказательством интоксикационной природы
+        болезни стал эксперимент с фильтрацией культуры: фильтрат, свободный от бактерий,
+        вызывал у лабораторных животных тот же паралитический синдром. В параллельном
+        опыте животным вводили профильтрованную среду без культуры — болезни не возникало.
+      </div>
+      <h3>Итоговый счёт: ${pct} / 100</h3>
+      <p class="lead">${reflection}</p>
+      <div class="hint">
+        <b>Ключевые выводы:</b> ботулизм — симметричный нисходящий паралич при сохранном
+        сознании и без выраженной лихорадки. Специфическое лечение (противоботулиническая
+        сыворотка) было разработано позже; в 1895 году ван Эрменгем заложил лишь
+        микробиологическую основу понимания болезни. Профилактика — правильная
+        термообработка консервов и соблюдение санитарных норм.
+      </div>
+    </div>
+
+    <div class="certificate" id="certificate">
+      <h2>СЕРТИФИКАТ</h2>
+      <h3>об успешном прохождении детективного квеста<br>«Дело №1895: вспышка в Эльзеле»</h3>
+      <p style="margin:14px 0">Настоящий сертификат подтверждает, что</p>
+      <div class="cert-field">${state.studentName || '____________________'}</div>
+      <p style="margin:14px 0">прошёл(а) расследование вспышки ботулизма в Эльзеле (1895 г.)</p>
+      <p style="margin:14px 0">и набрал(а) <b>${pct} из 100 баллов</b></p>
+      <div style="display:flex;justify-content:space-around;margin-top:30px;flex-wrap:wrap;gap:20px">
+        <div>
+          <div class="cert-label">Дата</div>
+          <div class="cert-field">${today}</div>
+        </div>
+        <div>
+          <div class="cert-label">Место для подписи</div>
+          <div class="cert-field" style="min-width:200px"></div>
+        </div>
+      </div>
+      <p style="margin-top:24px;font-size:12px;color:var(--grey);font-style:italic">
+        Составитель квеста — к.м.н., доцент кафедры инфекционных болезней и фтизиатрии РязГМУ Шутова О.В.
+      </p>
+    </div>
+
+    <div class="no-print" style="text-align:center">
+      <button class="btn" id="printBtn">Распечатать сертификат</button>
+      <button class="btn btn-secondary" id="restartBtn" style="margin-left:10px">Начать заново</button>
+    </div>
+  `;
+
+  document.getElementById('printBtn').addEventListener('click', ()=>window.print());
+  document.getElementById('restartBtn').addEventListener('click', ()=>{
+    state.studentName = '';
+    state.currentMission = 0;
+    state.score = 0;
+    state.missionScores = new Array(10).fill(null);
+    state.answers = {};
+    state.shuffledOrders = {};
+    state.shuffledOptions = {};
+    updateScore();
+    renderStart();
+  });
+}
+
+/* ============================================================
+   ЗАПУСК
+   ============================================================ */
+updateScore();
+renderStart();
+</script>
+</body>
+</html>
